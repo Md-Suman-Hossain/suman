@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureHTML Pro</title>
+    <!-- FontAwesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- CryptoJS Library for AES-256 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    
+    <style>
+        /* --- PREMIUM THEME CSS --- */
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #ffffff;
+            --text-muted: #a0a0a0;
+            --accent-color: #00d2ff;
+            --accent-gradient: linear-gradient(90deg, #00d2ff, #3a7bd5);
+            --card-radius: 16px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Animated Background Elements */
+        .bg-circle {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+            opacity: 0.4;
+        }
+        .c1 { width: 300px; height: 300px; background: #8e2de2; top: -50px; left: -50px; }
+        .c2 { width: 200px; height: 200px; background: #4a00e0; bottom: 50px; right: -50px; }
+
+        /* HEADER */
+        header {
+            display: flex; justify-content: space-between; align-items: center; padding: 20px 25px;
+            background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+            z-index: 10;
+        }
+        header h2 { font-size: 1.4rem; font-weight: 600; background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 1px; }
+        header i { font-size: 1.2rem; cursor: pointer; color: var(--text-main); opacity: 0.8; transition: 0.3s; }
+
+        /* MAIN CONTENT */
+        main {
+            flex: 1; padding: 25px; overflow-y: auto; padding-bottom: 100px;
+            scrollbar-width: thin; scrollbar-color: var(--accent-color) transparent;
+        }
+
+        /* UPLOAD BOX */
+        .upload-box {
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            background: var(--glass-bg);
+            padding: 30px;
+            border-radius: var(--card-radius);
+            text-align: center;
+            margin-bottom: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .upload-box:hover { border-color: var(--accent-color); background: rgba(0, 210, 255, 0.05); transform: translateY(-3px); }
+        .upload-box i { color: var(--accent-color); font-size: 2rem; margin-bottom: 10px; display: block; }
+        .upload-box span { color: var(--text-main); font-weight: 500; font-size: 0.95rem; }
+        
+        /* CARDS & INPUTS */
+        .card {
+            background: var(--glass-bg);
+            padding: 20px;
+            border-radius: var(--card-radius);
+            margin-bottom: 20px;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .label {
+            font-size: 0.75rem; color: var(--accent-color);
+            text-transform: uppercase; letter-spacing: 1.5px;
+            margin-bottom: 8px; display: block; font-weight: 600;
+        }
+
+        textarea, input[type="text"], input[type="password"] {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+        textarea { height: 120px; resize: none; font-family: 'Courier New', monospace; }
+        
+        textarea:focus, input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.3);
+        }
+
+        /* BUTTONS */
+        .action-btn {
+            width: 100%;
+            background: var(--accent-gradient);
+            color: #fff;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            display: flex; justify-content: center; align-items: center; gap: 10px;
+            box-shadow: 0 5px 20px rgba(0, 210, 255, 0.3);
+            transition: 0.3s;
+        }
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0, 210, 255, 0.4); }
+
+        /* TOAST NOTIFICATION */
+        #toast-container {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            z-index: 1000;
+        }
+        .toast {
+            min-width: 300px;
+            background: rgba(20, 20, 35, 0.95);
+            backdrop-filter: blur(10px);
+            color: #fff;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            border-left: 5px solid var(--accent-color);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            display: flex; align-items: center; gap: 15px;
+            animation: slideDown 0.5s ease forwards;
+        }
+        .toast.error { border-left-color: #ff4757; }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #fileInput, #decryptFileInput { display: none; } /* Updated to hide both inputs */
+
+        /* --- MODAL STYLES --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px);
+            z-index: 2000;
+            display: none; justify-content: center; align-items: flex-end;
+        }
+        .modal-overlay.show { display: flex; animation: fadeIn 0.3s; }
+        
+        .modal-content {
+            background: #1e1e24;
+            width: 100%;
+            max-width: 500px;
+            border-radius: 20px 20px 0 0;
+            padding: 25px;
+            box-shadow: 0 -5px 25px rgba(0,0,0,0.5);
+            animation: slideUp 0.3s ease-out;
+            position: relative;
+        }
+        
+        @media (min-width: 600px) {
+            .modal-overlay { align-items: center; }
+            .modal-content { border-radius: 16px; }
+        }
+
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px;
+        }
+        .modal-header h3 { color: #fff; font-size: 1.2rem; font-weight: 600; letter-spacing: 1px; }
+        .close-btn { background: rgba(255,255,255,0.1); border: none; color: #fff; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        
+        .code-preview {
+            background: #15151a;
+            color: #a0a0a0;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            height: 150px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .modal-actions { display: flex; gap: 15px; }
+        .modal-btn {
+            flex: 1; padding: 12px; border: none; border-radius: 8px;
+            font-weight: 600; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px;
+            font-size: 0.95rem;
+        }
+        .btn-copy { background: rgba(255,255,255,0.1); color: #fff; }
+        .btn-save { background: #3b3b4f; color: #fff; }
+        
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* --- BOTTOM NAVIGATION BAR --- */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: #1a1a24;
+            display: flex; justify-content: space-around;
+            padding: 0;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            z-index: 100;
+        }
+        
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 15px 0;
+            color: #888;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+            background: none;
+            border: none;
+            font-size: 0.9rem;
+        }
+        
+        .nav-item i { display: block; font-size: 1.2rem; margin-bottom: 5px; }
+        
+        .nav-item.active { color: var(--accent-color); background: rgba(0, 210, 255, 0.05); }
+        .nav-item.active::after {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px;
+            background: var(--accent-color);
+            box-shadow: 0 0 10px var(--accent-color);
+        }
+
+        /* View Toggling */
+        #view-encrypt, #view-decrypt { width: 100%; animation: fadeIn 0.4s; }
+
+    </style>
+</head>
+<body>
+
+    <!-- Background Elements -->
+    <div class="bg-circle c1"></div>
+    <div class="bg-circle c2"></div>
+
+    <!-- Header -->
+    <header>
+        <i class="fa-solid fa-code"></i>
+        <h2>SecureHTML <span style="font-size:0.5em; vertical-align:super; color:#00d2ff;">PRO</span></h2>
+        <i class="fa-solid fa-gear"></i>
+    </header>
+
+    <!-- Notification Container -->
+    <div id="toast-container"></div>
+
+    <main>
+        
+        <!-- === ENCRYPT VIEW === -->
+        <div id="view-encrypt">
+            <div class="upload-box" onclick="document.getElementById('fileInput').click()">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+                <span>Tap to Upload HTML/File</span>
+                <input type="file" id="fileInput" accept=".html, .txt, .css, .js" onchange="handleFileUpload(this)">
+            </div>
+
+            <div class="card">
+                <span class="label">Source Code</span>
+                <textarea id="sourceCode" placeholder="Paste your HTML code here..."></textarea>
+            </div>
+            
+            <div class="card">
+                <span class="label">Secret Password</span>
+                <input type="password" id="encryptPass" placeholder="Set a strong password">
+            </div>
+            
+            <div class="card">
+                <span class="label">Domain Lock (Auto-Open)</span>
+                <input type="text" id="domainLock" placeholder="e.g. mysite.com (Optional)">
+            </div>
+
+            <button class="action-btn" onclick="generateProtectedFile()">
+                <i class="fa-solid fa-lock"></i> Encrypt & Generate
+            </button>
+        </div>
+
+        <!-- === DECRYPT VIEW (File Upload Added) === -->
+        <div id="view-decrypt" style="display: none;">
+            
+            <!-- NEW Upload Box for Decrypt -->
+            <div class="upload-box" onclick="document.getElementById('decryptFileInput').click()">
+                <i class="fa-solid fa-file-arrow-up"></i>
+                <span>Tap to Upload Encrypted HTML</span>
+                <input type="file" id="decryptFileInput" accept=".html, .txt" onchange="handleDecryptFileUpload(this)">
+            </div>
+
+            <div class="card">
+                <span class="label">Encrypted HTML File Code</span>
+                <textarea id="decryptSource" placeholder="Paste generated HTML here..."></textarea>
+            </div>
+            
+            <div class="card">
+                <span class="label">Password</span>
+                <input type="password" id="decryptPass" placeholder="Enter password to unlock">
+            </div>
+            
+            <button class="action-btn" style="background: linear-gradient(90deg, #00d2ff, #0984e3);" onclick="decryptFile()">
+                <i class="fa-solid fa-unlock-keyhole"></i> Decrypt Code
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="switchTab('encrypt')" id="tab-encrypt">
+            <i class="fa-solid fa-shield-halved"></i> Encrypt
+        </button>
+        <button class="nav-item" onclick="switchTab('decrypt')" id="tab-decrypt">
+            <i class="fa-solid fa-file-code"></i> Decrypt
+        </button>
+    </nav>
+
+    <!-- RESULT MODAL -->
+    <div class="modal-overlay" id="resultModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Ready to Save</h3>
+                <button class="close-btn" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="code-preview" id="previewText">
+                <!-- Code appears here -->
+            </div>
+
+            <div class="modal-actions">
+                <button class="modal-btn btn-copy" onclick="copyCode()">
+                    <i class="fa-regular fa-copy"></i> Copy
+                </button>
+                <button class="modal-btn btn-save" onclick="saveFile()">
+                    <i class="fa-solid fa-download"></i> Save
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- NOTIFICATION SYSTEM ---
+        function showNotification(msg, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            let icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${msg}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
+
+        // --- TAB SWITCHING LOGIC ---
+        function switchTab(tab) {
+            const encryptView = document.getElementById('view-encrypt');
+            const decryptView = document.getElementById('view-decrypt');
+            const tabEncrypt = document.getElementById('tab-encrypt');
+            const tabDecrypt = document.getElementById('tab-decrypt');
+
+            if (tab === 'encrypt') {
+                encryptView.style.display = 'block';
+                decryptView.style.display = 'none';
+                tabEncrypt.classList.add('active');
+                tabDecrypt.classList.remove('active');
+            } else {
+                encryptView.style.display = 'none';
+                decryptView.style.display = 'block';
+                tabEncrypt.classList.remove('active');
+                tabDecrypt.classList.add('active');
+            }
+        }
+
+        // --- ENCRYPT FILE HANDLING ---
+        function handleFileUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) { 
+                document.getElementById('sourceCode').value = e.target.result;
+                showNotification("File loaded successfully!", "success");
+            };
+            reader.readAsText(file);
+        }
+
+        // --- DECRYPT FILE HANDLING (NEW) ---
+        function handleDecryptFileUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) { 
+                document.getElementById('decryptSource').value = e.target.result;
+                showNotification("Encrypted file loaded!", "success");
+            };
+            reader.readAsText(file);
+        }
+
+        // --- AES-256 GENERATION LOGIC ---
+        function generateProtectedFile() {
+            const source = document.getElementById('sourceCode').value;
+            const pass = document.getElementById('encryptPass').value;
+            const domain = document.getElementById('domainLock').value.trim();
+
+            if (!source || !pass) {
+                showNotification("Code and Password required!", "error");
+                return;
+            }
+
+            try {
+                // 1. Encrypt Payload using AES-256
+                const encryptedContent = CryptoJS.AES.encrypt(source, pass).toString();
+                
+                // 2. Prepare Domain Lock Key (Optional)
+                let encryptedDomainKey = "";
+                if(domain) {
+                    encryptedDomainKey = CryptoJS.AES.encrypt(pass, domain).toString();
+                }
+
+                // 3. CREATE HONEYPOT
+                const trollMessage = "এই ফাইলের পাসওয়ার্ড টি সুধু মাত্র তার কাছে আছে যে পাসওয়ার্ড টি জানেন";
+                const decoy1 = CryptoJS.AES.encrypt(trollMessage, "").toString();
+                const decoy2 = CryptoJS.AES.encrypt(trollMessage, "localhost").toString();
+
+                // Random Variable Names
+                const genVar = () => '_0x' + Math.random().toString(16).substr(2, 6);
+                const vPayload = genVar();
+                const vDomainKey = genVar();
+                const vDecoy = genVar();
+                const vUnlock = genVar();
+                const vRun = genVar();
+
+                // 4. Generate the Safe HTML
+                const finalHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secured Page</title>
+    <style>
+        body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#f3f4f6;display:flex;height:100vh;justify-content:center;align-items:center;margin:0;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;}
+        .box{background:#fff;padding:2rem;border-radius:1rem;box-shadow:0 10px 25px -5px rgba(0,0,0,0.1);text-align:center;width:90%;max-width:380px;display:none}
+        #load{color:#4F46E5;font-weight:600}
+        input{width:100%;padding:12px;margin:15px 0;border:1px solid #ddd;border-radius:8px;box-sizing:border-box}
+        button{width:100%;padding:12px;background:#4F46E5;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer}
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"><\/script>
+    <script>
+        // Anti-Right Click & Debug Protection
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        (function(){(function a(){try{let b=new Function("return (function() {}.constructor(\\"return this\\")( ));");if(b()){setInterval(function(){(function(){}.constructor("debugger")())},4000)}}catch(c){setTimeout(a,4000)}})()})();
+    <\/script>
+</head>
+<body>
+    <div id="load">Verifying Security...</div>
+    <div class="box" id="login">
+        <h3>Protected Content</h3>
+        <p style="color:#666;font-size:0.9rem">Enter password to view.</p>
+        <input type="password" id="p" placeholder="Password">
+        <button onclick="${vUnlock}()">Unlock</button>
+        <p id="err" style="color:red;display:none;font-size:0.85rem;margin-top:10px">Incorrect Password</p>
+    </div>
+    <script>
+        const ${vPayload} = "${encryptedContent}"; 
+        const ${vDomainKey} = "${encryptedDomainKey}";
+        
+        // HONEYPOT VARIABLES (Hackers will try to decrypt these)
+        const ${vDecoy}_A = "${decoy1}"; 
+        const ${vDecoy}_B = "${decoy2}";
+
+        window.onload = function() {
+            // Anti-Console
+            console.log = function(){}; console.clear();
+
+            const h = window.location.hostname.replace(/^www./, '');
+            if (${vDomainKey} && h) {
+                try {
+                    const k = CryptoJS.AES.decrypt(${vDomainKey}, h).toString(CryptoJS.enc.Utf8);
+                    if (k) ${vRun}(k, true); else show();
+                } catch (e) { show(); }
+            } else { show(); }
+        };
+        function show() { document.getElementById('load').style.display='none'; document.getElementById('login').style.display='block'; }
+        function ${vUnlock}() { ${vRun}(document.getElementById('p').value, false); }
+        function ${vRun}(k, a) {
+            try {
+                const d = CryptoJS.AES.decrypt(${vPayload}, k).toString(CryptoJS.enc.Utf8);
+                if(!d) throw 1;
+                document.open(); document.write(d); document.close();
+            } catch(e) {
+                if(!a) document.getElementById('err').style.display='block';
+                else show();
+            }
+        }
+    <\/script>
+</body>
+</html>`;
+
+                // Show in Modal
+                document.getElementById('modalTitle').textContent = "Encrypted HTML Ready";
+                document.getElementById('previewText').textContent = finalHTML;
+                document.getElementById('resultModal').classList.add('show');
+                showNotification("Secure & Decoy Added Successfully!");
+
+            } catch (e) {
+                console.error(e);
+                showNotification("Encryption Failed!", "error");
+            }
+        }
+
+        // --- DECRYPTION LOGIC ---
+        function decryptFile() {
+            const encryptedHTML = document.getElementById('decryptSource').value;
+            const password = document.getElementById('decryptPass').value;
+
+            if (!encryptedHTML || !password) {
+                showNotification("HTML and Password required!", "error");
+                return;
+            }
+
+            try {
+                // Extract the encrypted string using Regex
+                const regex = /const _0x[a-f0-9]+ = "(U2FsdGVk[^"]+)";/;
+                const match = encryptedHTML.match(regex);
+
+                if (match && match[1]) {
+                    const encryptedData = match[1];
+                    
+                    // Attempt Decryption
+                    const decryptedBytes = CryptoJS.AES.decrypt(encryptedData, password);
+                    const decryptedText = decryptedBytes.toString(CryptoJS.enc.Utf8);
+
+                    if (decryptedText) {
+                        document.getElementById('modalTitle').textContent = "Decrypted Source Code";
+                        document.getElementById('previewText').textContent = decryptedText;
+                        document.getElementById('resultModal').classList.add('show');
+                        showNotification("Decryption Successful!", "success");
+                    } else {
+                        showNotification("Incorrect Password or Corrupt Data!", "error");
+                    }
+                } else {
+                    showNotification("No encrypted data found in the HTML!", "error");
+                }
+            } catch (e) {
+                console.error(e);
+                showNotification("Decryption Failed! Wrong Password?", "error");
+            }
+        }
+
+        // --- MODAL & ACTIONS ---
+        function closeModal() {
+            document.getElementById('resultModal').classList.remove('show');
+        }
+
+        /* 
+           FIXED COPY FUNCTION 
+           -------------------
+           This version supports both Modern HTTPS and Old HTTP/File methods
+        */
+        function copyCode() {
+            const text = document.getElementById('previewText').textContent;
+
+            // Fallback Method: Creates a hidden text area to copy from
+            // This works on local files, Android webviews, and non-HTTPS sites
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            
+            // Ensure the element is not visible but part of the DOM
+            textArea.style.position = "fixed";
+            textArea.style.left = "-9999px";
+            textArea.style.top = "0";
+            document.body.appendChild(textArea);
+            
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showNotification("Code Copied Successfully!", "success");
+                } else {
+                    // Try modern API if fallback fails (rare)
+                    navigator.clipboard.writeText(text).then(() => {
+                        showNotification("Code Copied Successfully!", "success");
+                    }).catch(() => {
+                        showNotification("Manual Copy Required", "error");
+                    });
+                }
+            } catch (err) {
+                showNotification("Error copying code", "error");
+            }
+            
+            document.body.removeChild(textArea);
+        }
+
+        function saveFile() {
+            const text = document.getElementById('previewText').textContent;
+            const isHTML = text.trim().startsWith("<!DOCTYPE html") || text.trim().startsWith("<html");
+            const ext = isHTML ? "html" : "txt";
+            
+            const blob = new Blob([text], { type: isHTML ? "text/html" : "text/plain" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `decrypted_file.${ext}`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showNotification("File Saved Successfully!", "success");
+        }
+    </script>
+</body>
+</html>
