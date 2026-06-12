@@ -288,7 +288,7 @@ def load_data():
                 "welcome": '<b>𝐖𝐞𝐥𝐜𝐨𝐦𝐞 𝐓𝐎</b>\n<b>Suman Number 𝐁𝐎𝐓</b>\n<b>Ultra 𝐅𝐚𝐬𝐭 𝐁𝐎𝐓</b>',
                 "support": '<b>Support</b>\n\nClick the button below to contact support.',
                 "support_link": "https://t.me/sumannamber",
-                "otp_group_link": "https://t.me/+sumanotp653",
+                "otp_group_link": "https://t.me/sumanotp653",
                 "main_channel_link": "https://t.me/sumannamber",
                 "renge_group_link": "https://t.me/active_range_suman",
                 "btn_get_number": "GET NUMBER",
